@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<translations>
+  <en-GB>
+    <name>Extended Rankings</name>
+    <introduction>Here is the extended rankings for a divsion or a tournament.
+    Please select a division or a tournament</introduction>
+    <divisionLabel>Division: </divisionLabel>
+    <tournamentLabel>Tournament: </tournamentLabel>
+  </en-GB>
+  <fr-FR>
+    <name>Classements &amp;eacute;tendus</name>
+    <introduction>Vous trouverez ici les classements &amp;eacute;tendus pour une division ou un tournoi.
+    Merci de s&amp;eacute;lectionner une division ou un tournoi.</introduction>
+    <divisionLabel>Division : </divisionLabel>
+    <tournamentLabel>Tournoi : </tournamentLabel>
+  </fr-FR>
+</translations>
