@@ -28,6 +28,9 @@ if( true === isset($_GET['action']) ){
 			$returnObject = $mod->tournaments[0];			
 		}
 	}
+	if('getTournaments' === $action){
+		$returnObject = Tour::getBegunAndNotFinishedTours();
+	}
 	if( 'getMatches' === $action ){
 		if( true === isset($_GET['trid']) ){
 			$trid = intval($_GET['trid']);
@@ -49,6 +52,12 @@ if( true === isset($_GET['action']) ){
 				'action'=>'getMatches',
 				'trid'=>'id of the tournament'),
 			'example'=>'ws.php?action=getMatches&trid=40'
+		),
+		'getTournaments'=>array(
+			'help'=>'Get all tournaments opened and not finished',
+			'parameters'=>array(
+				'action'=>'getTournaments'),
+			'example'=>'ws.php?action=getTournaments'
 		),
 	);  
 }
