@@ -12,6 +12,7 @@ function json_test($type){
 }
 
 header('Content-Type: application/json'); 
+header('Access-Control-Allow-Origin: *');
 if( true === isset($_GET['action']) ){
 	$action = $_GET['action'];
 	mysql_up(false);
