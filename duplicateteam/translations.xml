@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<translations>
+  <en-GB>
+    <name>Duplicate Team</name>
+    <initialTeamLabel>Initial team: </initialTeamLabel>
+    <finalCoachLabel>Final coach:</finalCoachLabel>
+    <finalTeamLabel>Final team: </finalTeamLabel>
+    <initialTeamUndefined>initial team undefined</initialTeamUndefined>
+    <finalCoachUndefined>final coach undefined</finalCoachUndefined>
+    <finalTeamUndefined>final team undefined</finalTeamUndefined>
+  </en-GB>
+  <fr-FR>
+    <name>Duplication d'une équipe</name>
+    <initialTeamLabel>Équipe initiale : </initialTeamLabel>
+    <finalCoachLabel>Coach final :</finalCoachLabel>
+    <finalTeamLabel>Équipe finale : </finalTeamLabel>
+    <initialTeamUndefined>équipe initiale non définie</initialTeamUndefined>
+    <finalCoachUndefined>coach final non défini</finalCoachUndefined>
+    <finalTeamUndefined>équipe finale non définie</finalTeamUndefined>
+  </fr-FR>
+</translations>
