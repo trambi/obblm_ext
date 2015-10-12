@@ -73,7 +73,7 @@ class DuplicateTeam implements ModuleInterface
 
         echo '  options = {',"\n";
         echo '    minChars:2, ',"\n";
-        echo '    serviceUrl:\'handler.php?type=autocomplete&obj=',T_OBJ_COACH,'\''"\n";
+        echo '    serviceUrl:\'handler.php?type=autocomplete&obj=',T_OBJ_COACH,'\'',"\n";
         echo '  };',"\n";
         echo '  finalCoach = $(\'#finalCoach\').autocomplete(options);',"\n";
         echo '  options = {',"\n";
@@ -95,6 +95,16 @@ class DuplicateTeam implements ModuleInterface
 		echo '<input type="hidden" value="1" name="submitted" >',"\n";
 		echo '</form>';
 	}
+    
+    public function renderErrors(){
+        $template = $this->template;
+        echo $template['errorLabel'],$template['errors'];
+    }
+    
+    public function renderDuplicate(){
+        $template = $this->template;
+        echo 'Duplicated ';
+    }
 		
 	public static function main($argv){
 		global $lng;
