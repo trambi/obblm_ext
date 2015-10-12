@@ -5,17 +5,21 @@
     <initialTeamLabel>Initial team: </initialTeamLabel>
     <finalCoachLabel>Final coach:</finalCoachLabel>
     <finalTeamLabel>Final team: </finalTeamLabel>
+    <errorLabel>Error: </errorLabel>
     <initialTeamUndefined>initial team undefined</initialTeamUndefined>
     <finalCoachUndefined>final coach undefined</finalCoachUndefined>
     <finalTeamUndefined>final team undefined</finalTeamUndefined>
+    <duplicateError>duplication error</duplicateError>
   </en-GB>
   <fr-FR>
     <name>Duplication d'une équipe</name>
     <initialTeamLabel>Équipe initiale : </initialTeamLabel>
     <finalCoachLabel>Coach final :</finalCoachLabel>
     <finalTeamLabel>Équipe finale : </finalTeamLabel>
+    <errorLabel>Erreur : </errorLabel>
     <initialTeamUndefined>équipe initiale non définie</initialTeamUndefined>
     <finalCoachUndefined>coach final non défini</finalCoachUndefined>
     <finalTeamUndefined>équipe finale non définie</finalTeamUndefined>
+    <duplicateError>erreur lors de la duplication</duplicateError>
   </fr-FR>
 </translations>

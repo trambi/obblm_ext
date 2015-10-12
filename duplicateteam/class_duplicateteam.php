@@ -129,9 +129,13 @@ class DuplicateTeam implements ModuleInterface
                 $errors[] = $lng->getTrn('finalTeamUndefined',__CLASS__);
             }
             if( 0 === count($errors) ){
-                
+                $control = DuplicateTeam::duplicate($initialTeam,$finalTeam,$finalCoach);
+                if( FALSE === $control){
+                    $errors[] = $lng->getTrn('duplicateError',__CLASS__);
+                }
             }
             if( 0 !== count($errors) ){
+                $mod->addToTemplate('errorLabel',$lng->getTrn('errorLabel',__CLASS__));
                 $errorString = ucfirst(implode(",", $errors));
                 $mod->addToTemplate('errors',$errorString);
                 $mod->renderErrors();
