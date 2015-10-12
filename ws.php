@@ -1,4 +1,8 @@
 <?php
+//header('Content-Type: application/json'); 
+//header('Access-Control-Allow-Origin: *');
+
+require_once 'header.php';
 require_once 'settings.php';
 require_once 'lib/class_module.php';
 require_once 'lib/mysql.php';
@@ -6,15 +10,18 @@ require_once 'lib/class_tournament.php';
 require_once 'modules/extendedrankings/class_extendedrankings.php';
 require_once 'lib/misc_functions.php';
 require_once 'lib/class_match.php';
+require_once 'lib/class_stats.php';
+require_once 'lib/class_player.php';
+require_once 'lib/class_team.php';
 
 function json_test($type){
 	return array('action' => 'test');  	
 }
 
-header('Content-Type: application/json'); 
-header('Access-Control-Allow-Origin: *');
+
 if( true === isset($_GET['action']) ){
 	$action = $_GET['action'];
+    echo 'action : ', $action,'<br />';
 	mysql_up(false);
 	$returnObject = array();
 	if( 'test' === $action ){
@@ -35,6 +42,14 @@ if( true === isset($_GET['action']) ){
 		if( true === isset($_GET['trid']) ){
 			$trid = intval($_GET['trid']);
 			$returnObject = Match::getMatches(array(), STATS_TOUR, $trid,false);			
+		}
+	}
+	if( 'getTeam' === $action ){
+		if( true === isset($_GET['teamId']) ){
+			$teamId = intval($_GET['teamId']);
+			$team = new Team($teamId);
+            $team->getPlayers();
+            $returnObject = $team;
 		}
 	}
 }else{
@@ -58,6 +73,13 @@ if( true === isset($_GET['action']) ){
 			'parameters'=>array(
 				'action'=>'getTournaments'),
 			'example'=>'ws.php?action=getTournaments'
+		),
+		'getTeam'=>array(
+			'help'=>'Get team by id',
+			'parameters'=>array(
+				'action'=>'getTeam',
+				'teamId'=>'id of the team'),
+			'example'=>'ws.php?action=getTeam&teamId=255'
 		),
 	);  
 }
