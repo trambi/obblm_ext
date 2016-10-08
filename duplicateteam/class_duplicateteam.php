@@ -1,7 +1,7 @@
 <?php
 
 /*
- *  Copyright (c) Bertrand MADET <bertrand.madet@gmail.com> 2015. All Rights Reserved.
+ *  Copyright (c) Bertrand MADET <bertrand.madet@gmail.com> 2015-2016. All Rights Reserved.
  *
  *
  *  This file is part of OBBLM.
@@ -33,7 +33,7 @@ class DuplicateTeam implements ModuleInterface
 	    return array(
         	'author'     => 'Bertrand MADET',
 	        'moduleName' => 'Duplicate Team',
-	        'date'       => '2015',
+	        'date'       => '2016',
 	        'setCanvas'  => true,
 	    );
 	}
@@ -63,48 +63,60 @@ class DuplicateTeam implements ModuleInterface
 		$this->template[$key] = $value;
 	}
 
-	public function renderForm()
-	{
-        
-		$template = $this->template;
-		echo '<script>',"\n";
-        echo '$(document).ready(function(){',"\n";
-        echo '  var options,finalCoach,team;',"\n";
-
-        echo '  options = {',"\n";
-        echo '    minChars:2, ',"\n";
-        echo '    serviceUrl:\'handler.php?type=autocomplete&obj=',T_OBJ_COACH,'\'',"\n";
-        echo '  };',"\n";
-        echo '  finalCoach = $(\'#finalCoach\').autocomplete(options);',"\n";
-        echo '  options = {',"\n";
-        echo '    minChars:2,',"\n";
-        echo '    serviceUrl:\'handler.php?type=autocomplete&obj=',T_OBJ_TEAM,'\'',"\n";
-        echo '  };',"\n";
-        echo '  team = $(\'#initialTeam\').autocomplete(options);',"\n";
-        echo '});',"\n";
-        echo '</script>',"\n";
-
-		echo '<form id="duplicateteam" method="POST">',"\n";
-		echo '<label for="finalCoach">',$template['finalCoachLabel'],'</label>',"\n";
-        echo '<input id="finalCoach" type="text" name="finalCoach" size="30" maxlength="50" />',"\n";
-        echo '<label for="initialTeam">',$template['initialTeamLabel'],'</label>',"\n";
-        echo '<input id="initialTeam" type="text" name="initialTeam" size="30" maxlength="50" onblur="$(\'#initialTeam\').value=$(\'#finalTeam\').value" />',"\n";
-        echo '<label for="finalTeam">',$template['finalTeamLabel'],'</label>',"\n";
-        echo '<input id="finalTeam" type="text" name="finalTeam" size="30" maxlength="50" />',"\n";
-		echo '<input type="submit" value="',$template['submitButton'],'" name="Submit" >',"\n";
-		echo '<input type="hidden" value="1" name="submitted" >',"\n";
-		echo '</form>';
-	}
+  public function duplicateByName($initialTeamName,$finalTeamName,$finalCoachName)
+  {
+    // get team by name $initialTeamName
+    $teamId = get_alt_col('teams', 'name', $initialTeamName, 'team_id');
+    $teamToDuplicate = new Team($teamId);
     
-    public function renderErrors(){
-        $template = $this->template;
-        echo $template['errorLabel'],$template['errors'];
+    //get coach id in addition of name $finalCoachName 
+    return $this->duplicate($teamToDuplicate,get_alt_col('coaches', 'name', $finalCoachName, 'coach_id'),$finalTeamName);
+  }
+  
+  protected function duplicate($initialTeam,$finalCoachId,$finalTeamName)
+  {
+    $finalTeamInput = array();
+    foreach ( Team::$createEXPECTED as $expectedField){
+      $finalTeamInput[$expectedField] = $initialTeam->$expectedField;
+    }
+    $finalTeamInput['name'] = $finalTeamName;
+    $finalTeamInput['owned_by_coach_id'] = $finalCoachId;
+    $finalTeamInput['won_0'] = $initialTeam->mv_won ;
+    $finalTeamInput['lost_0'] = $initialTeam->mv_lost ;
+    $finalTeamInput['draw_0'] = $initialTeam->mv_draw ;
+    $finalTeamInput['played_0'] = $initialTeam->mv_won + $initialTeam->mv_lost + $initialTeam->mv_draw ;
+    $finalTeamInput['wt_0'] = $initialTeam->wt_cnt; //Won tournaments
+    $finalTeamInput['gf_0'] = $initialTeam->mv_gf; //Goals by team
+    $finalTeamInput['ga_0'] = $initialTeam->mv_ga; //Goals against team
+    $finalTeamInput['imported'] = 1;
+    list($createTeamStatus, $teamId) = Team::create($finalTeamInput);
+    if( $createTeamStatus !== 0 ){
+      return FALSE;
     }
     
-    public function renderDuplicate(){
-        $template = $this->template;
-        echo 'Duplicated ';
+    $playersToDuplicate = $initialTeam->getPlayers();
+    foreach($playersToDuplicate as $playerToDuplicate){
+      if ( ( false === $playerToDuplicate->is_dead ) && ( false === $playerToDuplicate->is_sold ) && ( false === $playerToDuplicate->is_journeyman ) ){
+        $this->duplicatePlayer($playerToDuplicate,$teamId);
+      }
     }
+    $initialTeam->setRetired(TRUE);
+  }
+    
+  protected function duplicatePlayer($playerToDuplicate,$teamId){
+    $playerDuplicated = array('name'=>$playerToDuplicate->name,
+                              'team_id'=>$teamId,
+                              'nr'=>$playerToDuplicate->nr,
+                              'f_pos_id'=>$playerToDuplicate->f_pos_id);
+    return Player::create( $playerDuplicated, array('force' => true, 'free' => true) );
+  }
+    
+  public function render($file){
+    if ( TRUE === in_array($file,array('form','result')) ){
+      $template = $this->template;
+      include('templates/'.$file.'_html.php');
+    }
+  }
 		
 	public static function main($argv){
 		global $lng;
@@ -115,36 +127,39 @@ class DuplicateTeam implements ModuleInterface
 		$mod->addToTemplate('finalCoachLabel',$lng->getTrn('finalCoachLabel',__CLASS__));
 		$mod->addToTemplate('finalTeamLabel',$lng->getTrn('finalTeamLabel',__CLASS__));
 		$mod->addToTemplate('submitButton',$lng->getTrn('common/submit'));
-        if ( FALSE === isset($_POST['submitted']) ){
-            $mod->renderForm();
-        }else{
-            $errors = array();
-            if( FALSE === isset($_POST['initialTeam'])){
-                $errors[] = $lng->getTrn('initialTeamUndefined',__CLASS__);
-            }
-            if( FALSE === isset($_POST['finalCoach'])){
-                $errors[] = $lng->getTrn('finalCoachUndefined',__CLASS__);
-            }
-            if( FALSE === isset($_POST['finalTeam'])){
-                $errors[] = $lng->getTrn('finalTeamUndefined',__CLASS__);
-            }
-            if( 0 === count($errors) ){
-                $control = DuplicateTeam::duplicate($initialTeam,$finalTeam,$finalCoach);
-                if( FALSE === $control){
-                    $errors[] = $lng->getTrn('duplicateError',__CLASS__);
-                }
-            }
-            if( 0 !== count($errors) ){
-                $mod->addToTemplate('errorLabel',$lng->getTrn('errorLabel',__CLASS__));
-                $errorString = ucfirst(implode(",", $errors));
-                $mod->addToTemplate('errors',$errorString);
-                $mod->renderErrors();
-            }else{
-                $mod->renderDuplicate();
-            }
+    if ( FALSE === isset($_POST['submitted']) ){
+      $mod->render('form');
+    }else{
+      $errors = array();
+      if( FALSE === isset($_POST['initialTeam'])){
+        $errors[] = $lng->getTrn('initialTeamUndefined',__CLASS__);
+      }
+      if( FALSE === isset($_POST['finalCoach'])){
+        $errors[] = $lng->getTrn('finalCoachUndefined',__CLASS__);
+      }
+      if( FALSE === isset($_POST['finalTeam'])){
+        $errors[] = $lng->getTrn('finalTeamUndefined',__CLASS__);
+      }
+      if( 0 === count($errors) ){
+        $initialTeam = $_POST['initialTeam'];
+        $finalTeam = $_POST['finalTeam'];
+        $finalCoach = $_POST['finalCoach'];
+        
+        $control = $mod->duplicateByName($initialTeam,$finalTeam,$finalCoach);
+        if( FALSE === $control){
+          $errors[] = $lng->getTrn('duplicateError',__CLASS__);
         }
+      }
+      if( 0 !== count($errors) ){
+        $errorString = ucfirst(implode(",", $errors));
+        $mod->addToTemplate('status','error');
+        $mod->addToTemplate('message',$lng->getTrn('errorLabel',__CLASS__).$errorString);
+      }else{
+        $mod->addToTemplate('status','info');
+        $mod->addToTemplate('message','team "'.$initialTeam.'" duplicated and affected to "'.$finalCoach.'" with the name "'.$finalTeam.'"');
+      }
+      $mod->render('result');
+    }
 	}
-	
-	
 }
 ?>
